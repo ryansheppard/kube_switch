@@ -1,7 +1,7 @@
 # kube_switch
 ## !! This is not a production ready repository !!
 
-No seriously, I have never written anything in Rust until now. This might eat your `kubeconfig` or something. But it seems to work okay for me.
+No seriously, I have never written anything in Rust until now. This might eat your `kubeconfig` or something. But it seems to work okay for me. It does not respect the `KUBECONFIG` env var or having multiple configs. I did this to learn a little about Rust and have something ever so slightly faster than `kubectx`/`kubens`.
 
 ## Installing
 Run `mise run install`
@@ -16,3 +16,5 @@ I use the following in my `fish` config to make it easier to work with:
 abbr -a ktx 'kube_switch context'
 abbr -a kns 'kube_switch namespace'
 ```
+
+An alias in bash will accomplish the same thing as the above abbreviations.
