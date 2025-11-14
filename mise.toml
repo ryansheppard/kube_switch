@@ -1,0 +1,8 @@
+[tools]
+rust = "1.91.1"
+
+[tasks.build]
+run = "cargo build --release"
+
+[tasks.install]
+run = "cargo install --path ."
