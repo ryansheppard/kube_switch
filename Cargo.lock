@@ -1252,7 +1252,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "kube_switch"
+name = "kubeswitch"
 version = "0.1.0"
 dependencies = [
  "anyhow",
