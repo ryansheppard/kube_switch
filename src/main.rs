@@ -4,7 +4,6 @@ use std::fs::File;
 
 mod cli;
 mod config;
-mod handlers;
 mod kube;
 mod ui;
 
@@ -17,8 +16,8 @@ async fn main() -> Result<()> {
     let config: config::Config = serde_yaml::from_reader(contents)?;
 
     let config = match args.action {
-        cli::Action::Context => handlers::handle_context(config, &args.item_name).await?,
-        cli::Action::Namespace => handlers::handle_namespace(config, &args.item_name).await?,
+        cli::Action::Context => config.select_context(&args.item_name).await?,
+        cli::Action::Namespace => config.select_namespace(&args.item_name).await?,
     };
 
     let new_file = File::create(&kubeconfig_path)?;
