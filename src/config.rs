@@ -91,3 +91,83 @@ fn set_current_namespace(config: &mut Kubeconfig, namespace: String) {
         context.namespace = Some(namespace);
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use kube::config::{Context, Kubeconfig, NamedContext};
+
+    fn make_test_config(contexts: Vec<(&str, Option<&str>)>, current: Option<&str>) -> Kubeconfig {
+        Kubeconfig {
+            current_context: current.map(String::from),
+            contexts: contexts
+                .into_iter()
+                .map(|(name, ns)| NamedContext {
+                    name: name.to_string(),
+                    context: Some(Context {
+                        cluster: "test-cluster".to_string(),
+                        user: Some("test-user".to_string()),
+                        namespace: ns.map(String::from),
+                        ..Default::default()
+                    }),
+                })
+                .collect(),
+            ..Default::default()
+        }
+    }
+
+    fn get_generic_test_config() -> Kubeconfig {
+        make_test_config(
+            vec![("ctx1", Some("default")), ("ctx2", None)],
+            Some("ctx1"),
+        )
+    }
+
+    #[tokio::test]
+    async fn test_select_context_with_context() {
+        let config = get_generic_test_config();
+
+        let config = select_context(config, &Some("ctx2".to_string()))
+            .await
+            .expect("select_context should return");
+
+        assert_eq!(config.current_context, Some("ctx2".to_string()));
+    }
+
+    #[tokio::test]
+    async fn test_select_namespace_with_namespace() {
+        let config = get_generic_test_config();
+
+        let config = select_namespace(config, &Some("given-ns".to_string()))
+            .await
+            .expect("select_namespace should return");
+
+        let current_ns = config
+            .contexts
+            .iter()
+            .find(|c| &c.name == "ctx1")
+            .and_then(|ctx| ctx.context.as_ref())
+            .and_then(|c| c.namespace.as_ref())
+            .expect("ctx1 should have a namespace");
+
+        assert_eq!(current_ns, "given-ns");
+    }
+
+    #[test]
+    fn test_set_namespace() {
+        let mut config = get_generic_test_config();
+
+        set_current_namespace(&mut config, "new-ns".to_string());
+
+        let current_ns = config
+            .contexts
+            .iter()
+            .find(|c| &c.name == "ctx1")
+            .and_then(|ctx| ctx.context.as_ref())
+            .and_then(|c| c.namespace.as_ref())
+            .expect("ctx1 should have a namespace");
+
+        assert_eq!(current_ns, "new-ns");
+    }
+}
